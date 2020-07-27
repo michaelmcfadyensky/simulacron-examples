@@ -1,0 +1,5 @@
+.vertx
+.idea
+*.jar
+*.iml
+target/*
