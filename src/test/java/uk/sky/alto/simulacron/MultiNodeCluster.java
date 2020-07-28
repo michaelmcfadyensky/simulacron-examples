@@ -17,6 +17,7 @@ public class MultiNodeCluster {
 
     /**
      * The following is required to run the following tests. This will add loopbacks for 127.0.0.*
+     *
      * for sub in {0..4}; do
      * echo "Opening for 127.0.$sub"
      * for i in {0..255}; do sudo ifconfig lo0 alias 127.0.$sub.$i up; done

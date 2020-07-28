@@ -23,6 +23,9 @@ public class QueryMismatches {
                     .columnTypes("name", "varchar", "age", "int"))
             .build();
 
+    /**
+     * Query matching is case sensitive, even for keywords
+     */
     @Test
     public void queryMismatch_casing() {
         Server server = Server.builder().build();
@@ -40,6 +43,9 @@ public class QueryMismatches {
         }
     }
 
+    /**
+     * Query matching compares exact strings, including delimiters
+     */
     @Test
     public void queryMismatch_semicolon() {
         Server server = Server.builder().build();
@@ -57,6 +63,9 @@ public class QueryMismatches {
         }
     }
 
+    /**
+     * BE AWARE: If no prime is found, a empty result set will be returned and no errors will be logged
+     */
     @Test
     public void queryMismatch_doesNotThrowErrorOnMismatch() {
         Server server = Server.builder().build();
@@ -65,7 +74,7 @@ public class QueryMismatches {
             node.prime(prime);
 
             Session session = defaultBuilder(node).build().connect();
-            ResultSet resultSet = session.execute("SELECT * from table;");
+            ResultSet resultSet = session.execute("INSERT INTO table (key,value) VALUES('abd', 'def')");
 
             System.out.println(resultSet);
         }
