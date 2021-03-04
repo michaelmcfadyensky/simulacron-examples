@@ -3,8 +3,10 @@ package uk.sky.alto.simulacron;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.oss.protocol.internal.request.Query;
+import com.datastax.oss.simulacron.common.cluster.ClusterSpec;
 import com.datastax.oss.simulacron.common.cluster.NodeSpec;
 import com.datastax.oss.simulacron.common.stubbing.Prime;
+import com.datastax.oss.simulacron.server.BoundCluster;
 import com.datastax.oss.simulacron.server.BoundNode;
 import com.datastax.oss.simulacron.server.Server;
 import org.junit.Test;
@@ -27,22 +29,28 @@ public class SelectQuery {
     public void happyCase() {
         Server server = Server.builder().build();
 
-        try (BoundNode node = server.register(NodeSpec.builder().build())) {
+        Prime overridenPrime = when("SELECT * FROM table")
+                .then(rows()
+                        .row("name", "luke", "age", 25)
+                        .columnTypes("name", "varchar", "age", "int"))
+                .build();
+
+        try (BoundCluster cluster = server.register(ClusterSpec.builder().withNodes(1).build())) {
             // can clean primes and logs using
             //  node.clearPrimes();
             //  node.clearLogs();
 
-            node.prime(prime);
+            cluster.prime(prime);
+            cluster.node(0).prime(overridenPrime);
 
-            Session session = defaultBuilder(node).build().connect();
+            Session session = defaultBuilder(cluster).build().connect();
             Row row = session.execute("SELECT * FROM table").one();
 
             assertEquals("michael", row.getString("name"));
             assertEquals(28, row.getInt("age"));
-            assertTrue(verifyQuery("SELECT * FROM table", node));
 
             System.out.println("Query Log:");
-            node.getLogs().getQueryLogs().forEach(System.out::println);
+            cluster.getLogs().getQueryLogs().forEach(System.out::println);
         }
     }
 
